@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>住所検索システム (Google Maps API版)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .api-badge {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .badge-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        input[type="file"]::-webkit-file-upload-button {
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-right: 10px;
+        }
+
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background: #5568d3;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 25px;
+        }
+
+        .info-box h3 {
+            color: #1976D2;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .features {
+            background-color: #f0f9ff;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .features h3 {
+            color: #2e7d32;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .features ul {
+            margin-left: 20px;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .completion-message {
+            display: none;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 25px;
+            text-align: center;
+            animation: slideIn 0.5s;
+        }
+
+        .completion-message.active {
+            display: block;
+        }
+
+        .completion-message h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .completion-message p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .checkmark {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            color: #38ef7d;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 15px;
+            animation: scaleIn 0.5s;
+        }
+
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>住所検索システム</h1>
+        <p class="subtitle">Google Maps API版 - 高精度な住所検索</p>
+
+        <div class="api-badge">
+            {% if api_key_loaded %}
+                <span class="badge badge-success">✓ API Key OK</span>
+            {% else %}
+                <span class="badge badge-warning">⚠ API Key 未設定</span>
+            {% endif %}
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if not api_key_loaded %}
+            <div class="alert alert-error">
+                <strong>APIキーが設定されていません</strong><br>
+                config.txt ファイルに Google Maps API キーを設定してください。<br>
+                詳細は GOOGLE_MAPS_API_SETUP.md を参照してください。
+            </div>
+        {% endif %}
+
+        <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="form-group">
+                <label for="file">Excelファイル (.xlsx または .xls) *</label>
+                <input type="file" id="file" name="file"
+                       accept=".xlsx,.xls" required
+                       {% if not api_key_loaded %}disabled{% endif %}>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_business_type">業態名で絞り込み（任意）</label>
+                <input type="text" id="filter_business_type" name="filter_business_type"
+                       placeholder="空欄=全件検索、入力=該当業態のみ検索"
+                       {% if not api_key_loaded %}disabled{% endif %}>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn"
+                    {% if not api_key_loaded %}disabled{% endif %}>
+                住所・電話番号・営業時間を検索
+            </button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="color: #667eea; font-weight: 600;">処理中です。しばらくお待ちください...</p>
+            <p style="color: #999; font-size: 13px; margin-top: 5px;">Google Maps APIで住所を検索しています</p>
+        </div>
+
+        <div class="completion-message" id="completionMessage">
+            <div class="checkmark">✓</div>
+            <h2>処理が完了しました！</h2>
+            <p>ファイルのダウンロードが自動的に開始されます</p>
+            <p style="font-size: 14px; margin-top: 15px;">ダウンロードが開始されない場合は、ブラウザの設定をご確認ください</p>
+        </div>
+
+        <div class="features">
+            <h3>Google Maps API版の特徴</h3>
+            <ul>
+                <li>✓ 高精度な住所検索（Googleのデータベース使用）</li>
+                <li>✓ 並列処理で高速検索（10スレッド同時実行）</li>
+                <li>✓ Seleniumが不要（軽量・高速）</li>
+                <li>✓ 月28,000リクエストまで無料</li>
+                <li>✓ 安定した動作（APIの仕様変更に強い）</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>使い方</h3>
+            <ul>
+                <li>業態名と店舗名の列を含むExcelファイルをアップロード</li>
+                <li>業態名を指定すると該当業態のみ検索（空欄で全件検索）</li>
+                <li>正式名称、住所、電話番号、営業時間を自動取得</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Excel住所検索フォーム
+        let processingTimer = null;
+
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const loading = document.getElementById('loading');
+            const completionMessage = document.getElementById('completionMessage');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // ローディング表示
+            loading.classList.add('active');
+            completionMessage.classList.remove('active');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '処理中...';
+
+            // ページのフォーカスが戻ったら完了とみなす（ダウンロードダイアログが閉じられた）
+            let focusCheckStarted = false;
+            const startTime = Date.now();
+
+            const focusHandler = function() {
+                const elapsedTime = Date.now() - startTime;
+                // 最低3秒経過後にフォーカスが戻ったら完了
+                if (elapsedTime > 3000 && !focusCheckStarted) {
+                    focusCheckStarted = true;
+                    window.removeEventListener('focus', focusHandler);
+
+                    if (loading.classList.contains('active')) {
+                        loading.classList.remove('active');
+                        completionMessage.classList.add('active');
+
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = '住所・電話番号・営業時間を検索';
+
+                        // 完了メッセージを8秒後に非表示
+                        setTimeout(function() {
+                            completionMessage.classList.remove('active');
+                        }, 8000);
+                    }
+                }
+            };
+
+            window.addEventListener('focus', focusHandler);
+
+            // タイムアウト: 2分経過したら強制的に完了とみなす
+            processingTimer = setTimeout(function() {
+                window.removeEventListener('focus', focusHandler);
+
+                if (loading.classList.contains('active')) {
+                    loading.classList.remove('active');
+                    completionMessage.classList.add('active');
+
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '住所・電話番号・営業時間を検索';
+
+                    setTimeout(function() {
+                        completionMessage.classList.remove('active');
+                    }, 8000);
+                }
+            }, 120000); // 2分
+        });
+    </script>
+</body>
+</html>

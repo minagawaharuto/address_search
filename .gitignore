@@ -1,0 +1,53 @@
+# Python 一時ファイル
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 仮想環境
+.venv/
+venv/
+ENV/
+
+# アプリケーション固有の一時ファイル
+uploads/
+outputs/
+*.xlsx
+*.xls
+*.csv
+!サンプル_支店リスト.xlsx  # サンプルファイルのみ許可する場合は!で除外を解除できます
+
+# 秘密情報・設定
+config.txt
+.env
+GOOGLE_MAPS_API_KEY*
+
+# OS固有のファイル
+.DS_Store
+Thumbs.db
+
+# エディタ・IDE設定
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# デバッグ・ログ
+*.log
